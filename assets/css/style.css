@@ -1,0 +1,36 @@
+/* Index.html css */
+#openLogo{
+    margin-left: 20px;
+    padding: 20px;
+}
+#forgotPass{
+    margin-left: 75px;
+}
+#signUp{
+    margin-left: 105px;
+}
+
+
+/* homescreen.html css */
+
+
+/* Skill Search */
+html,
+body {
+
+    /* background-image: url('bg.png');   */
+    /* background:linear-gradient(to right,#32C487 ,#6C337D ); */
+    height: 100%;
+}
+
+.card {
+    width: 350px;
+    height: 350px;
+    /* max-height: 300px; */
+    overflow-y: scroll;
+    overflow-x: none;
+}
+
+.sadFace {
+    font-size: 4.0 em;
+}
