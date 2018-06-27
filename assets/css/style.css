@@ -27,8 +27,13 @@ body {
     width: 350px;
     height: 350px;
     /* max-height: 300px; */
-    overflow-y: scroll;
+    
+}
+
+.card-body{
+    overflow-y: hidden;
     overflow-x: none;
+    padding: 0 1.25rem;
 }
 
 .sadFace {

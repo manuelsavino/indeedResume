@@ -1,23 +1,60 @@
 // $(function () {
 
+var start;
+var noResults = $('<h1 id="noResults" class="text-center display-1"><span class="sadFace">:-(</span><br> No Results Found</h1>')
+var noMoreResults = $('<h1 id="noResults" class="text-center display-1">No more results</h1>')
+var loading = $('<img id="loading" class="mx-auto d-block" src="assets/images/loading.gif">')
+
 function skillSearch() {
     $(".container").empty();
 
     //form creating
     if (!($("#skillsForm").length)) {
+        var skillsForm = $("<div>").attr({ 
+            id: "skillsForm",
+            class: "text-center mt-2",    
+        })
         var form = $("<form>")
         form.attr({
-            class: "form-inline m-2",
-            id: "skillsForm"
+            class: "form-inline",  
         })
-        var formGroup = $("<div>")
-        formGroup.attr("class", "form group")
+        //label for skill
+        var label = $("<label>")
+        label.append("Search for a skill:")
+        var formGroup = $("<div>").attr("class", "form group")
+        formGroup.append(label)
+        form.append(formGroup)
+
+        //input for skill
         var input = $("<input>")
         input.attr({
-            class: "form-control mr-2",
+            class: "form-control ml-2 mr-2",
             id: "query",
             type: "text"
         })
+        var formGroup = $("<div>").attr("class", "form group")
+        formGroup.append(input)
+        form.append(formGroup)
+
+        //label for location
+        var label = $("<label>")
+        label.append("Location:")
+        var formGroup = $("<div>").attr("class", "form group")
+        formGroup.append(label)
+        form.append(formGroup)
+
+        //input for location
+        var input = $("<input>")
+        input.attr({
+            class: "form-control ml-2 mr-2",
+            id: "location",
+            type: "text"
+        })
+        var formGroup = $("<div>").attr("class", "form group")
+        formGroup.append(input)
+        form.append(formGroup)
+
+        //submit button
         var button = $("<button>")
         button.attr({
             class: "btn btn-primary",
@@ -25,58 +62,53 @@ function skillSearch() {
             id: "search"
         })
         button.append("Submit")
-        formGroup.append(input)
+        var formGroup = $("<div>").attr("class", "form group")
         formGroup.append(button)
         form.append(formGroup)
-        $(".container").prepend(form)
+        skillsForm.prepend(form)
+        $(".container").prepend(skillsForm)
+
     }
     var results = $("<div>").attr("id", "results")
     $(".container").append(results)
+
+
 }
-var start;
-var noResults = $('<h1 id="noResults" class="text-center display-1"><span class="sadFace">:-(</span><br> No Results Found</h1>')
-var noMoreResults = $('<h1 id="noResults" class="text-center display-1">No more results</h1>')
-var loading = $('<img id="loading" class="mx-auto d-block" src="assets/images/loading.gif">')
-//initial Search
-$(document).on("click","#search" ,function () {
+
+$(document).on("click", "#search", function () {
     event.preventDefault();
-    
+
     $("#noResults").remove()
     $(".container").append(loading)
     $("#results").empty()
-    var query = $("#query").val()
+    var query =$('#query').val()
+    var location = $("#location").val()
     start = 0;
-    callIndeed(query, start)
-})
-//load more
-// $(document).on("click","#more", function(){
-//     $("#more").remove()
-//     var query = $("#query").val()
-//     start +=50
-//     callIndeed(query, start)
-// })
+    callIndeed(query, location,start)
+}) 
 
-$(window).scroll(function(){
-    if($(window).scrollTop() > ($("html").prop('scrollHeight')-1200))
-    {   
-
-        // $("#more").remove()
+$(window).scroll(function () {
+    // console.log($(window).scrollTop());
+    // console.log($(document).height());
+    // console.log($(window).height())
+    if ($(window).scrollTop() == $(document).height() - $(window).height()) {
         var query = $("#query").val()
-        start +=50
-        callIndeed(query, start)
+        var location = $("#location").val()
+        start += 50
+        $(".container").append(loading)
+        callIndeed(query,location,start)
     }
+});
 
-})
-// console.log($(".container").scrollTop())
-function callIndeed(query, start) {
+function callIndeed(query,location, start) {
     $.ajax({
-        url: `https://auth.indeed.com/resumes/?client_id=ee67c8790bfa32ac013a21c622d34d5de0c8be342a7711899d5d9c4cb18b7c4f&l=miami&v=1&q=${query}&start=${start}`,
+        url: `https://indeedapi.herokuapp.com/?l=${location}&v=1&q=${query}&start=${start}`,
         method: "GET"
     }).then(function (response) {
         console.log(response)
         $("#loading").remove()
         var datas = response.data.resumes
-        console.log(datas.length)
+        // console.log(datas.length)
         if (datas.length === 0 && start > 51) {
             console.log("Start is: "+start)
             $("#results").append(noMoreResults)
@@ -90,41 +122,46 @@ function callIndeed(query, start) {
             for (i = 0; i < datas.length; i++) {
                 if (datas[i].skillsList.length > 0 && datas[i].firstName != "" && datas[i].lastName != "") {
                     var card = $("<div>")
-                    card.attr("class", "card float-left m-2")
+                    card.attr("class", "card float-left m-2  ")
                     var cardBody = $("<div>")
                     cardBody.attr({
-                        class: "card-body",
+                        class: "card-body pt-none",
                         style: "width: 18rem;"
                     })
+                    cardBody.append("<p class='font-weight-light'>" + datas[i].city + "</p>")
                     var buttonDiv = $("<div>")
                     buttonDiv.attr("class", "btn-group")
                     buttonDiv.append('<a class="btn btn-info" href="http://indeed.com' + datas[i].url + '"target="_blank">Resume Profile</a>')
-                    buttonDiv.append('<a class="btn btn-primary" href="' + 'https://www.linkedin.com/search/results/index/?keywords=' + datas[i].firstName + '%20' + datas[i].lastName + '"target="_blank">Linked In Search</a>')
-                    cardBody.append(buttonDiv)
-                    cardBody.append("<h4>" + datas[i].firstName + " " + datas[i].lastName + "</h4>")
+                    buttonDiv.append('<a class="btn btn-primary " href="' + 'https://www.linkedin.com/search/results/index/?keywords=' + datas[i].firstName + '%20' + datas[i].lastName + '"target="_blank">Linked In Search</a>')
+                    var cardFooter = $("<div>").attr("class", "card-footer text-center")
+                    cardFooter.append(buttonDiv)
+                    // cardBody.append("<div class='card-header text-capitalize mb-0'>" + datas[i].firstName + " " + datas[i].lastName + "</div><p class='font-weight-light'>" + datas[i].city +"</p>")
                     var list = $("<ul>")
+                   
+                    
                     for (j = 0; j < datas[i].skillsList.length; j++) {
-                        list.append("<li>" + (datas[i].skillsList[j].text).toLowerCase() + " - " + datas[i].skillsList[j].monthsOfExperience + " Months </li>")
+                        if(j < 5){
+                            list.append("<li class='text-capitalize'>" + (datas[i].skillsList[j].text).toLowerCase() + " - " + datas[i].skillsList[j].monthsOfExperience + " Months </li>")
+                        }
+                        else{
+                            j = datas[i].skillsList.length -1
+                            list.append("<li class='text-capitalize'> <a href='http://indeed.com" + datas[i].url + "'target='_blank'>See More...</a></li>")
+                        }
+                        
                     }
                     cardBody.append(list)
+                    card.append("<div class='card-header text-capitalize mb-0'><h3>" + datas[i].firstName + " " + datas[i].lastName + "</h3></div>")
                     card.append(cardBody)
-
+                    card.append(cardFooter)
                     $("#results").append(card)
                 }//end of if to check theres data in all fields
             }//end of outer forloor
-            
-            // var more = $("<button>").attr({
-            //     class: "btn btn-primary btn-block",
-            //     id: "more",
-            //     dispalay: "block"
-            // })
-
-            // more.append("Load More")
-            // $(".container").append(more)
-            console.log(start)
-
         }//End else
     })//end of ajax call then
 }//end indeed func
 
+function postAJob(){
+    $(".container").empty();
+    
+}
 // })//End of doc ready
